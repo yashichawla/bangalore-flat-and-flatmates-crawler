@@ -1,6 +1,8 @@
 import os
 import time
 import logging
+import datetime
+import pytz
 from dotenv import load_dotenv
 from typing import Tuple, List, Dict
 from sqlalchemy.orm import sessionmaker
@@ -8,6 +10,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine, MetaData, Table
 
 load_dotenv()
+IST = pytz.timezone("Asia/Kolkata")
 
 
 class FlatAndFlatmatesDatabase:
@@ -73,4 +76,15 @@ class FlatAndFlatmatesDatabase:
             logging.error(
                 f"Error while checking content exists in database: {content})\nError: {e}"
             )
+            return False
+
+    def delete_posts_before_given_time(self, num_days: int):
+        time = datetime.datetime.now(IST) - datetime.timedelta(days=num_days)
+        try:
+            query = self.posts_table.delete().where(self.posts_table.c.time < time)
+            logging.debug(query)
+            self.connection.execute(query)
+            return True
+        except Exception as e:
+            logging.error(f"Error while deleting posts before {time}: {e}")
             return False

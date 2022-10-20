@@ -48,7 +48,15 @@ if __name__ == "__main__":
         fetch_latest_posts, "interval", minutes=SEARCH_CONFIG.get("interval", 20)
     )
 
+    scheduler.add_job(
+        db.delete_posts_before_given_time,
+        "interval",
+        hours=12,
+        args=[SEARCH_CONFIG.get("retention", 30)],
+    )
+
     logging.info("Starting scheduler for fetching new posts")
+    logging.info("Starting scheduler for deleting old posts")
     scheduler.start()
 
     try:
